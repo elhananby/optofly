@@ -15,6 +15,7 @@ uv run python main.py
 # Python tests
 uv run pytest
 uv run pytest tests/ -v               # verbose
+# tests/visual/ is marked @pytest.mark.display and auto-skips without a DISPLAY env var (see tests/conftest.py)
 
 # Lint
 uv run ruff check .
@@ -52,6 +53,8 @@ sudo scripts/install_ximea_driver.sh
 uv run python -m src.tools.frame_alignment /mnt/data/experiments/<timestamp>.braidz
 ```
 
+Deeper per-topic docs live under `docs/`: `getting-started.md`, `calibration.md`, `architecture.md`, `visual-stimuli-panda3d.md`, `camera.md`, `opto-trigger.md`, `troubleshooting.md`.
+
 ## Configuration
 
 Copy and customize — local files are git-ignored:
@@ -82,6 +85,8 @@ TriggerHandler (SUB 5555)  →  ZMQ PUB  topics=ZONE_ENTER/ZONE_EXIT/OPTO_ZONE_E
     ├── OptoTriggerWorker    (fires LED on OPTO_ZONE_ENTER, one-shot)                                     ├─→ ZMQ PUSH  port=latency_port ─→ LatencyLogger (ZMQ PULL, writes latency.csv)
     └── VisualProcess        (Panda3D; renders stimuli on VISUAL_ZONE_ENTER, one-shot)                    ─┘
 ```
+
+`OptoTriggerWorker` (`src/processes/led.py`) is the ZMQ process wrapper; the Arduino serial driver it wraps is `OptoTrigger` in `src/hardware/led.py` — don't confuse the two `led.py` files.
 
 The ZMQ BRAID feed is only live when the full stack is running. Standalone tools (calibration, simulators) that need tracking data must connect directly to the Braid HTTP SSE endpoint (`/events`) — with two exceptions: `braid_visualizer` consumes the ZMQ BRAID feed, and `braid_simulator` binds the BRAID PUB port itself, so the visualizer works against either the full stack or the simulator.
 
